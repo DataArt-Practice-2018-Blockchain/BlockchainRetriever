@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+}
+
+group 'com.dataart.dkaznacheev'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile('org.apache.camel:camel-spring-boot-starter:2.22.0')
+    compile group: 'org.apache.camel', name: 'camel-stream', version: '2.14.1'
+
+    compile group: 'org.apache.camel', name: 'camel-web3j', version: '2.22.0'
+
+    compile group: 'org.apache.camel', name: 'camel-gson', version: '2.22.0'
+
+    compile group: 'org.apache.camel', name: 'camel-mongodb', version: '2.22.0'
+
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-mongodb', version: '2.0.3.RELEASE'
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
