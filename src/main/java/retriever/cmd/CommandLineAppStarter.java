@@ -18,6 +18,8 @@ public class CommandLineAppStarter implements CommandLineRunner {
     @Produce
     private ProducerTemplate producerTemplate;
 
+    private static final int LOG_FREQUENCY = 1000;
+
     @Override
     public void run(String... args) throws Exception {
         int lastBlockIndex = rpcCaller.getLastBlockIndex();
@@ -32,6 +34,8 @@ public class CommandLineAppStarter implements CommandLineRunner {
 
         for (int i = startBlockIndex; i <= lastBlockIndex; i++) {
             copyBlockToDB(i);
+            if (i % LOG_FREQUENCY == 0)
+                System.out.println("Copied " + i + " blocks");
         }
     }
 
