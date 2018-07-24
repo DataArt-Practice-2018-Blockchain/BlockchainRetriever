@@ -1,26 +1,59 @@
 package retriever.cmd;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import retriever.rpc.RPCCaller;
+import java.util.ArrayList;
 
 @Component
 public class CommandLineAppStarter implements CommandLineRunner {
+    @Autowired
+    private RPCCaller rpcCaller;
+
+    @Produce
+    private ProducerTemplate producerTemplate;
+
     @Override
     public void run(String... args) throws Exception {
-        RestTemplate template = new RestTemplate();
-        String url = "http://35.228.59.11:8545";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        int lastBlockIndex = rpcCaller.getLastBlockIndex();
 
-        String queryTemplate = "{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\"," +
-                "\"params\":[],\"id\":1}";
-        HttpEntity<String> entity = new HttpEntity<>(queryTemplate, headers);
-        String result = template.postForObject(url, entity, String.class);
+        //int minBlockIndex = getMinBlockIndex();
+        //System.out.println("Min found block is " + minBlockIndex + ", last block is " + lastBlockIndex);
 
-        System.out.println(result);
+
+        int startBlockIndex = Integer.parseInt(args[0]);
+
+        System.out.println("Starting copying from " + startBlockIndex + " to " + lastBlockIndex);
+
+        for (int i = startBlockIndex; i <= lastBlockIndex; i++) {
+            copyBlockToDB(i);
+        }
+    }
+
+    private void copyBlockToDB(int blockNumber) {
+        String block = rpcCaller.getBlock(blockNumber);
+        producerTemplate.sendBody("direct:dbInsert", block);
+    }
+
+    private int getMinBlockIndex() { //[ { $group: { _id: {}, minBlockNumber: { $max:"$decNumber"}}}]
+        DBObject aggregation =
+            new BasicDBObject("$group",
+                new BasicDBObject("_id", 1)
+                    .append("minBlockNumber",
+                            new BasicDBObject("$min", "$decNumber")
+                    )
+            );
+
+        ArrayList<DBObject> result = (ArrayList<DBObject>) producerTemplate.requestBody("direct:query", aggregation);
+
+        if (result.size() == 0)
+            return 0;
+
+        return (int) result.get(0).get("minBlockNumber");
     }
 }

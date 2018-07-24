@@ -18,7 +18,13 @@ public class BlockchainRoute extends RouteBuilder {
         from("web3j://http://35.228.59.11:8545?operation=BLOCK_OBSERVABLE&fullTransactionObjects=true")
                 .marshal().json(JsonLibrary.Gson)
                 .convertBodyTo(String.class)
-                .to("stream:out")
+                .to("direct:dbInsert");
+
+        from("direct:dbInsert")
+                .bean(BlockConverterService.class, "convertBlockNumberToDec")
                 .to("mongodb:mongo?database=blockchain&collection=blocks&operation=insert");
+
+        from("direct:query")
+                .to("mongodb:mongo?database=blockchain&collection=blocks&operation=aggregate");
     }
 }

@@ -18,7 +18,6 @@ public class AppConfig {
 
     @Bean
     public Mongo mongo() throws UnknownHostException {
-        Mongo mongo = new MongoClient(mongoAddress, mongoPort);
-        return mongo;
+        return new MongoClient(mongoAddress, mongoPort);
     }
 }
