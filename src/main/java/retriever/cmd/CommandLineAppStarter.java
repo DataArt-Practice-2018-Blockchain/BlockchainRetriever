@@ -31,7 +31,7 @@ public class CommandLineAppStarter implements CommandLineRunner {
 
         System.out.println("Starting copying from " + startBlockIndex + " to " + lastBlockIndex);
 
-        for (int i = 292000; i <= 293000; i++) {
+        for (int i = startBlockIndex; i <= lastBlockIndex; i++) {
             copyBlockToDB(i);
             if (i % LOG_FREQUENCY == 0)
                 System.out.println("Copied " + i + " blocks");
