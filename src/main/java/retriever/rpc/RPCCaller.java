@@ -44,11 +44,17 @@ public class RPCCaller {
     public String getBlock(int blockNumber) {
         String blockQuery =
                 "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBlockByNumber\"," +
-                        "\"params\":[\"0x%d\", true],\"id\":1}";
+                        "\"params\":[\"0x%h\", true],\"id\":1}";
         String result = sendQueryForResult(String.format(blockQuery, blockNumber));
 
         JSONObject object = new JSONObject(result);
-        return object.getJSONObject("result").toString();
+
+        if (object.get("result") instanceof  JSONObject)
+            return object.getJSONObject("result").toString();
+        else {
+            System.out.println("Null on block " + blockNumber);
+            return null;
+        }
     }
 
     private String sendQueryForResult(String query) {

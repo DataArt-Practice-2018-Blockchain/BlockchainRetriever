@@ -15,13 +15,17 @@ public class BlockchainRoute extends RouteBuilder {
 
     @Override
     public void configure() {
-        from("web3j://http://35.228.59.11:8545?operation=BLOCK_OBSERVABLE&fullTransactionObjects=true")
+        from("web3j://http://"
+                + nodeAddress + ":"
+                + Integer.toString(nodePort)
+                + "?operation=BLOCK_OBSERVABLE&fullTransactionObjects=true")
                 .marshal().json(JsonLibrary.Gson)
                 .convertBodyTo(String.class)
                 .to("direct:dbInsert");
 
         from("direct:dbInsert")
                 .bean(BlockConverterService.class, "convertBlockNumberToDec")
+                //.to("stream:out");
                 .to("mongodb:mongo?database=blockchain&collection=blocks&operation=insert");
 
         from("direct:query")

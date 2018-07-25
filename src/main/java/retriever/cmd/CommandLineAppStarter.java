@@ -27,21 +27,22 @@ public class CommandLineAppStarter implements CommandLineRunner {
         //int minBlockIndex = getMinBlockIndex();
         //System.out.println("Min found block is " + minBlockIndex + ", last block is " + lastBlockIndex);
 
-
         int startBlockIndex = Integer.parseInt(args[0]);
 
         System.out.println("Starting copying from " + startBlockIndex + " to " + lastBlockIndex);
 
-        for (int i = startBlockIndex; i <= lastBlockIndex; i++) {
+        for (int i = 292000; i <= 293000; i++) {
             copyBlockToDB(i);
             if (i % LOG_FREQUENCY == 0)
                 System.out.println("Copied " + i + " blocks");
         }
+
     }
 
     private void copyBlockToDB(int blockNumber) {
         String block = rpcCaller.getBlock(blockNumber);
-        producerTemplate.sendBody("direct:dbInsert", block);
+        if (block != null)
+            producerTemplate.sendBody("direct:dbInsert", block);
     }
 
     private int getMinBlockIndex() { //[ { $group: { _id: {}, minBlockNumber: { $max:"$decNumber"}}}]
