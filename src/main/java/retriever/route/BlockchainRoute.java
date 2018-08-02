@@ -21,12 +21,21 @@ public class BlockchainRoute extends RouteBuilder {
                 + "?operation=BLOCK_OBSERVABLE&fullTransactionObjects=true")
                 .marshal().json(JsonLibrary.Gson)
                 .convertBodyTo(String.class)
-                .to("direct:dbInsert");
+                .to("direct:dbInsertBlock");
 
-        from("direct:dbInsert")
+/*        from("stream:in")
+                .to("direct:dbInsertBlock");*/
+
+        from("direct:dbInsertBlock")
                 .bean(BlockConverterService.class, "convertBlockNumberToDec")
-                //.to("stream:out");
-                .to("mongodb:mongo?database=blockchain&collection=blocks&operation=insert");
+                .bean(BlockConverterService.class, "convertTimestampToDec")
+                .process(new BlockProcessor())
+                .to("stream:out");
+                //.to("mongodb:mongo?database=blockchain&collection=blocks&operation=insert");
+
+        from("direct:dbInsertTransaction")
+                .to("stream:out");
+                //.to("mongodb:mongo?database=blockchain&collection=transactions&operation=insert");
 
         from("direct:query")
                 .to("mongodb:mongo?database=blockchain&collection=blocks&operation=aggregate");
