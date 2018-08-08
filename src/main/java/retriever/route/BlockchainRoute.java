@@ -34,11 +34,11 @@ public class BlockchainRoute extends RouteBuilder {
                 .to("mongodb:mongo?database=blockchain&collection=blocks&operation=insert");
 
         from("direct:parseBlock")
-                .process(new BlockProcessor());  //to "direct:dbInsertTransaction"
+                .process(new TransactionParser());  //to "direct:dbInsertTransaction"
 
         from("direct:dbInsertTransaction")
                 .bean(TransactionConverterService.class, "addMethodName")
-                //.to("stream:out")
+                //.to("stream:out");
                 .to("mongodb:mongo?database=blockchain&collection=transactions&operation=insert");
 
         from("direct:dbInsertContract")
