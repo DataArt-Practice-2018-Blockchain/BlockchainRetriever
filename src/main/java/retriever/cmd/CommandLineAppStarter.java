@@ -1,67 +1,69 @@
 package retriever.cmd;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-import org.apache.camel.Produce;
-import org.apache.camel.ProducerTemplate;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Options;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import retriever.rpc.RPCCaller;
-import java.util.ArrayList;
+import retriever.db.DBHelper;
 
 @Component
 public class CommandLineAppStarter implements CommandLineRunner {
-    @Autowired
-    private RPCCaller rpcCaller;
 
-    @Produce
-    private ProducerTemplate producerTemplate;
+    @Autowired
+    private DBHelper dbHelper;
 
     private static final int LOG_FREQUENCY = 1000;
 
     @Override
     public void run(String... args) throws Exception {
-        /*
-        int lastBlockIndex = rpcCaller.getLastBlockIndex();
+
+        Options options = new Options();
+        options.addOption("p", "parse", false, "only parse blocks");
+        options.addOption("s", true, "start block number");
+        options.addOption("f", true, "last block number");
 
         //int minBlockIndex = getMinBlockIndex();
         //System.out.println("Min found block is " + minBlockIndex + ", last block is " + lastBlockIndex);
 
-        int startBlockIndex = Integer.parseInt(args[0]);
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmd = parser.parse(options, args);
 
-        System.out.println("Started copying from " + startBlockIndex + " to " + lastBlockIndex);
+        int startBlockIndex;
 
-        for (int i = startBlockIndex; i <= lastBlockIndex; i++) {
-            copyBlockToDB(i);
-            if (i % LOG_FREQUENCY == 0)
-                System.out.println("Copied " + i + " blocks");
+        if (cmd.hasOption("s")) {
+            startBlockIndex = Integer.parseInt(cmd.getOptionValue("s"));
+        } else {
+            startBlockIndex = -1;
         }
-        */
 
-    }
+        int lastBlockIndex;
+        if (cmd.hasOption("f")) {
+            lastBlockIndex = Integer.parseInt(cmd.getOptionValue("f"));
+        } else {
+            lastBlockIndex = dbHelper.getLastBlockIndex();
+        }
 
-    private void copyBlockToDB(int blockNumber) {
-        String block = rpcCaller.getBlock(blockNumber);
-        if (block != null) {
-            producerTemplate.sendBody("direct:dbInsertBlock", block);
+        if (startBlockIndex == -1)
+            return;
+
+        if (!cmd.hasOption("p")) {
+            System.out.println("Started copying from " + startBlockIndex + " to " + lastBlockIndex);
+            for (int i = startBlockIndex; i <= lastBlockIndex; i++) {
+                dbHelper.copyBlockToDB(i);
+                if (i % LOG_FREQUENCY == 0)
+                    System.out.println("Copied " + i + " blocks");
+            }
+        } else {
+            System.out.println("Started parsing from " + startBlockIndex + " to " + lastBlockIndex);
+            for (int i = startBlockIndex; i <= lastBlockIndex; i++) {
+                dbHelper.parseBlockToDB(i);
+                if (i % LOG_FREQUENCY == 0)
+                    System.out.println("Parsed " + i + " blocks");
+            }
         }
     }
 
-    private int getMinBlockIndex() { //[ { $group: { _id: {}, minBlockNumber: { $max:"$decNumber"}}}]
-        DBObject aggregation =
-            new BasicDBObject("$group",
-                new BasicDBObject("_id", 1)
-                    .append("minBlockNumber",
-                            new BasicDBObject("$min", "$decNumber")
-                    )
-            );
-
-        ArrayList<DBObject> result = (ArrayList<DBObject>) producerTemplate.requestBody("direct:query", aggregation);
-
-        if (result.size() == 0)
-            return 0;
-
-        return (int) result.get(0).get("minBlockNumber");
-    }
 }
