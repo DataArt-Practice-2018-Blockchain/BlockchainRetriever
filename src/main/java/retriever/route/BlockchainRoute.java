@@ -15,14 +15,14 @@ public class BlockchainRoute extends RouteBuilder {
 
     @Override
     public void configure() {
-        /*from("web3j://http://"
+        from("web3j://http://"
                 + nodeAddress + ":"
                 + Integer.toString(nodePort)
                 + "?operation=BLOCK_OBSERVABLE&fullTransactionObjects=true")
                 .marshal().json(JsonLibrary.Gson)
                 .convertBodyTo(String.class)
                 .to("direct:dbInsertBlock");
-*/
+
 /*        from("stream:in")
                 .to("direct:dbInsertBlock");*/
 
@@ -30,19 +30,20 @@ public class BlockchainRoute extends RouteBuilder {
                 .bean(BlockConverterService.class, "convertBlockNumberToDec")
                 .bean(BlockConverterService.class, "convertTimestampToDec")
                 .to("direct:parseBlock")
-                .to("stream:out");
-                //.to("mongodb:mongo?database=blockchain&collection=blocks&operation=insert");
+              //  .to("stream:out")
+                .to("mongodb:mongo?database=blockchain&collection=blocks&operation=insert");
 
         from("direct:parseBlock")
                 .process(new BlockProcessor());  //to "direct:dbInsertTransaction"
 
         from("direct:dbInsertTransaction")
-                .to("stream:out");
-                //.to("mongodb:mongo?database=blockchain&collection=transactions&operation=insert");
+                .bean(TransactionConverterService.class, "addMethodName")
+                //.to("stream:out")
+                .to("mongodb:mongo?database=blockchain&collection=transactions&operation=insert");
 
         from("direct:dbInsertContract")
-                .to("stream:out");
-        //.to("mongodb:mongo?database=blockchain&collection=contracts&operation=insert");
+                //.to("stream:out")
+                .to("mongodb:mongo?database=blockchain&collection=contracts&operation=insert");
 
 
         from("direct:dbFindOneByQuery")

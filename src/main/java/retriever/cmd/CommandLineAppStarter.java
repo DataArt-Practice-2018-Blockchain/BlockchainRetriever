@@ -25,9 +25,6 @@ public class CommandLineAppStarter implements CommandLineRunner {
         options.addOption("s", true, "start block number");
         options.addOption("f", true, "last block number");
 
-        //int minBlockIndex = getMinBlockIndex();
-        //System.out.println("Min found block is " + minBlockIndex + ", last block is " + lastBlockIndex);
-
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
 

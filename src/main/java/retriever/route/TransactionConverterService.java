@@ -18,23 +18,29 @@ public class TransactionConverterService {
     @Autowired
     private EtherScanCaller etherScanCaller;
 
-    public String addMethodName (@Body String transaction) {
+    public String addMethodName(@Body String transaction) {
         JSONObject object = new JSONObject(transaction);
+
+        if (object.isNull("to"))
+            return transaction;
 
         String address = object.getString("to");
         String inputMethodData = Decoder.getInputMethodData(transaction);
+
+        if (inputMethodData == null)
+            return transaction;
 
         String methodName = dbHelper.findMethodInContract(address, inputMethodData);
 
         if (methodName == null) {
             String abi = etherScanCaller.getABI(address);
-            if (abi == null) {
+            if (abi == null || abi.equals("Contract source code not verified")) {
                 return transaction;
             }
             dbHelper.addContractToDB(address, abi);
             methodName = Decoder.getFunctionName(abi, transaction);
         }
-        
+
         object.put("methodName", methodName);
         return object.toString();
     }

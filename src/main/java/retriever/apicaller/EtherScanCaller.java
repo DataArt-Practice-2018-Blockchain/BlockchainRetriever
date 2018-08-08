@@ -13,7 +13,6 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Map;
 
 @Component
 public class EtherScanCaller {
@@ -45,30 +44,16 @@ public class EtherScanCaller {
         );
 
         try {
+            Thread.sleep(250);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
             JSONObject result = new JSONObject(response.getBody());
             return result.getString("result");
         } catch (NullPointerException | JSONException e) {
             return null;
-        }
-    }
-
-    public static void main(String[] args) {
-        try {
-            String abi = new EtherScanCaller().getABI("0xE43a244d802Fc5EB74BD877701db8fC3904C854D");
-
-            /*System.out.println(abi);
-            JSONArray arr = new JSONArray(abi);
-            for (Object object : arr)
-                System.out.println(object.toString());
-            */
-
-            Map<String, String> methods = Decoder.getContractFunctionNamesByHash(abi);
-            methods.forEach((key, value) -> {
-                System.out.println(key + ": " + value);
-            });
-        }
-        catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

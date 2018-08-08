@@ -14,13 +14,16 @@ public class Decoder {
     private final static char[] hexArray = "0123456789abcdef".toCharArray();
 
     public static String getInputMethodData(String transaction) {
-        return getInputData(transaction).substring(2, 10);
+        String input =  getInputData(transaction);
+        if (    input.length() < 10
+            || !input.substring(0,2).equals("0x"))
+            return null;
+        return input.substring(2, 10);
     }
 
     private static String getInputData(String transaction) {
         JSONObject obj = new JSONObject(transaction);
         return obj
-                .getJSONObject("result")
                 .getString("input");
     }
 
