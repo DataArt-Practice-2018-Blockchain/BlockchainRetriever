@@ -41,7 +41,11 @@ public class TransactionConverterService {
             methodName = Decoder.getFunctionName(abi, transaction);
         }
 
+        if (methodName == null)
+            return transaction;
+
         object.put("methodName", methodName);
+        object.put("method", methodName + "@" + address);
         return object.toString();
     }
 }

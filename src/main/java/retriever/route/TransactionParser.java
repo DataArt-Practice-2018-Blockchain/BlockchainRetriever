@@ -11,11 +11,13 @@ import org.springframework.stereotype.Component;
 public class TransactionParser implements Processor {
 
     @Override
-    public void process(Exchange exchange) throws Exception {
+    public void process(Exchange exchange) {
         String block = (String)exchange.getIn().getBody();
         JSONObject blockJSON = new JSONObject(block);
-        long timestamp = blockJSON.getLong("decTimestamp");
-        String hexTimestamp = String.format("0x%h", timestamp);
+
+        long timestamp = Long.parseLong(blockJSON.getString("timestamp").substring(2), 16);
+
+        String hexTimestamp = blockJSON.getString("timestamp");
         JSONArray transactions = blockJSON.getJSONArray("transactions");
 
         ProducerTemplate producerTemplate = exchange.getContext().createProducerTemplate();

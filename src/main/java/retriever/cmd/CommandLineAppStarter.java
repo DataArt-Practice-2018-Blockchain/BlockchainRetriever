@@ -19,7 +19,6 @@ public class CommandLineAppStarter implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-
         Options options = new Options();
         options.addOption("p", "parse", false, "only parse blocks");
         options.addOption("s", true, "start block number");
@@ -61,6 +60,7 @@ public class CommandLineAppStarter implements CommandLineRunner {
                     System.out.println("Parsed " + i + " blocks");
             }
         }
+
     }
 
 }

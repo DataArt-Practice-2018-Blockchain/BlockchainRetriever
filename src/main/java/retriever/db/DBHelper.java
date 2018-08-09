@@ -2,7 +2,6 @@ package retriever.db;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
 import decoder.Decoder;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
