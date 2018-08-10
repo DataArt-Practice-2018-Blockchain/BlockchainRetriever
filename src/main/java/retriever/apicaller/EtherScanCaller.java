@@ -15,17 +15,36 @@ import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Class for making requests to Etherscan API.
+ */
 @Component
 public class EtherScanCaller {
+
+    /**
+     * Address cache max size, cache clears after exceeding this limit.
+     */
     private static final int MAX_CACHE_SIZE = 1500000;
-    private final String url = "https://api-rinkeby.etherscan.io/api?module=contract&action=getabi" +
+
+    /**
+     * GET request template for getting the contract ABI.
+     */
+    private static final String url = "https://api-rinkeby.etherscan.io/api?module=contract&action=getabi" +
             "&address=%s" +
             "&apikey=%s";
 
     private RestTemplate template;
     private HttpHeaders headers;
+
+    /**
+     * API key for Etherscan gotten from https://etherscan.io/myapikey.
+     * Stored in file "apikey" in project folder (on the same level with src/).
+     */
     private String apiKey;
 
+    /**
+     * Caching set for contract addresses that were checked and not verified.
+     */
     private Set<String> notVerified;
 
     private EtherScanCaller() throws IOException {
@@ -39,6 +58,11 @@ public class EtherScanCaller {
         notVerified = new HashSet<>();
     }
 
+    /**
+     * Returns ABI for contract address or null if there is no ABI or an error occured in the process.
+     * @param address contract address
+     * @return contract ABI as JSON string
+     */
     public String getABI(String address) {
         if (notVerified.contains(address))
             return null;

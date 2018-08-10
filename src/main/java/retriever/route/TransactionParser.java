@@ -7,9 +7,16 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
+/**
+ * Component for parsing Ethereum blocks and producing transactions.
+ */
 @Component
 public class TransactionParser implements Processor {
 
+    /**
+     * Processes a block and sends transactions to transaction routes.
+     * @param exchange route exchange
+     */
     @Override
     public void process(Exchange exchange) {
         String block = (String)exchange.getIn().getBody();

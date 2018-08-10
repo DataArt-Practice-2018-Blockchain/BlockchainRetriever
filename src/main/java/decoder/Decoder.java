@@ -2,20 +2,26 @@ package decoder;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.web3j.crypto.Hash;
 
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
-import org.web3j.crypto.Hash;
 
+/**
+ * Class with methods for decoding input data in Ethereum transactions.
+ */
 public class Decoder {
 
     private final static char[] hexArray = "0123456789abcdef".toCharArray();
 
+    /**
+     * Returns first 4 bytes of transaction input that correspond to method call.
+     * Returns null if transaction has empty or incorrect input.
+     * @param transaction entire transaction JSON string
+     * @return hex string with method call data
+     */
     public static String getInputMethodData(String transaction) {
         String input =  getInputData(transaction);
         if (    input.length() < 10
@@ -24,20 +30,24 @@ public class Decoder {
         return input.substring(2, 10);
     }
 
-    private static String getInputData(String transaction) {
-        JSONObject obj = new JSONObject(transaction);
-        return obj
-                .getString("input");
-    }
-
+    /**
+     * Gets the transaction's called method from transaction and ABI.
+     * @param abi contract ABI as JSON string
+     * @param transaction transaction as JSON string
+     * @return name of called method, null if method was not found
+     */
     public static String getFunctionName(String abi, String transaction) {
         Map<String, String> functionNamesByHash = getContractFunctionNamesByHash(abi);
 
         String inputData = getInputMethodData(transaction);
-        //System.out.println(inputData.substring(2, 10));
         return functionNamesByHash.get(inputData);
     }
 
+    /**
+     * Converts contract ABI to mapping of method signature hash to method name.
+     * @param abi contract ABI as JSON string
+     * @return ABI mapping
+     */
     public static Map<String, String> getContractFunctionNamesByHash(String abi) {
         Map<String, String> result = new HashMap<>();
         JSONArray obj = new JSONArray(abi);
@@ -46,13 +56,17 @@ public class Decoder {
             JSONObject item = obj.getJSONObject(i);
             if (item.getString("type").equals("function")) { //or there's no type key??
                 String hash = getFunctionHash(item);
-               // System.out.println(hash + " : " + item.getString("name"));
                 result.put(hash, item.getString("name"));
             }
         }
         return result;
     }
 
+    /**
+     * Returns method's signature hash
+     * @param item method from ABI as JSONObject
+     * @return signature hash as hex string
+     */
     private static String getFunctionHash(JSONObject item) {
         String name = item.getString("name");
         StringJoiner joiner = new StringJoiner(",");
@@ -66,6 +80,20 @@ public class Decoder {
         return signatureHash(name + "(" + joiner.toString() + ")");
     }
 
+    /**
+     * Gets input data from transaction.
+     * @param transaction transaction as JSON string.
+     * @return input data
+     */
+    private static String getInputData(String transaction) {
+        return new JSONObject(transaction).getString("input");
+    }
+
+    /**
+     * Converts byte array to hex string.
+     * @param bytes byte array
+     * @return hex string
+     */
     private static String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for ( int j = 0; j < bytes.length; j++ ) {
@@ -76,15 +104,13 @@ public class Decoder {
         return new String(hexChars);
     }
 
+    /**
+     * Converts method signature to its hash.
+     * @param s method signature in form of string
+     * @return hash as hex string
+     */
     private static String signatureHash(String s) {
         String hash = bytesToHex(Hash.sha3(s.getBytes(StandardCharsets.UTF_8)));
         return hash.substring(0, 8);
     }
-
-    /*public static void main(String[] args) throws IOException {
-        String abi = Files.lines(Paths.get("abi.json")).findFirst().orElse("");
-        String transaction = Files.lines(Paths.get("transaction.json")).findFirst().orElse("");
-        System.out.println(getFunctionName(abi, transaction));
-    }
-    */
 }

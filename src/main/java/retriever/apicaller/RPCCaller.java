@@ -8,6 +8,9 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * Class for remote procedure calling on Ethereum node.
+ */
 @Component
 public class RPCCaller {
 
@@ -26,10 +29,18 @@ public class RPCCaller {
         headers.setContentType(MediaType.APPLICATION_JSON);
     }
 
+    /**
+     * Returns node address.
+     * @return node address
+     */
     private String url() {
         return "http://" + nodeAddress + ":" + nodePort;
     }
 
+    /**
+     * Returns the number of top block in blockchain.
+     * @return the number of top block in blockchain
+     */
     public int getLastBlockIndex() {
         String lastBlockQuery =
                 "{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\"," +
@@ -41,6 +52,11 @@ public class RPCCaller {
         return Integer.parseInt(hexValue.substring(2), 16);
     }
 
+    /**
+     * Returns the block from blockchain
+     * @param blockNumber block number
+     * @return block as JSON string
+     */
     public String getBlock(int blockNumber) {
         String blockQuery =
                 "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBlockByNumber\"," +

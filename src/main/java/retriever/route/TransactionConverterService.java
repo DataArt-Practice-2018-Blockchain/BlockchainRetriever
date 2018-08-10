@@ -9,7 +9,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import retriever.apicaller.EtherScanCaller;
 import retriever.db.DBHelper;
 
-
+/**
+ * Component for transaction converting operations.
+ */
 @Component
 public class TransactionConverterService {
 
@@ -19,6 +21,11 @@ public class TransactionConverterService {
     @Autowired
     private EtherScanCaller etherScanCaller;
 
+    /**
+     * Adds method name to transaction document.
+     * @param transaction transaction
+     * @return transformed transaction
+     */
     public String addMethodName(@Body String transaction) {
         JSONObject object = new JSONObject(transaction);
 

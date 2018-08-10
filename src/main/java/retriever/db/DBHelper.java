@@ -14,6 +14,9 @@ import retriever.apicaller.RPCCaller;
 import java.util.ArrayList;
 import java.util.Map;
 
+/**
+ * Class for working with MongoDB database and data flow.
+ */
 @Component
 public class DBHelper {
 
@@ -23,6 +26,10 @@ public class DBHelper {
     @Produce
     private ProducerTemplate producerTemplate;
 
+    /**
+     * Gets block from database (or copies it from node) and sends it to parsing route.
+     * @param blockNumber block number
+     */
     public void parseBlockToDB(int blockNumber) {
         String block = getBlockFromDB(blockNumber);
         if (block != null) {
@@ -39,6 +46,11 @@ public class DBHelper {
 
     }
 
+    /**
+     * Gets block from database.
+     * @param blockNumber block number
+     * @return block as JSON object or null if the block was not found
+     */
     public String getBlockFromDB(int blockNumber) {
         DBObject query = new BasicDBObject(
                 "number",
@@ -54,6 +66,10 @@ public class DBHelper {
         return response.toString();
     }
 
+    /**
+     * Returns the number of top block in blockchain.
+     * @return the number of top block in blockchain
+     */
     public int getLastBlockIndex() {
         return rpcCaller.getLastBlockIndex();
     }
@@ -65,23 +81,12 @@ public class DBHelper {
         }
     }
 
-    public int getMinBlockIndex() { //[ { $group: { _id: {}, minBlockNumber: { $max:"$decNumber"}}}]
-        DBObject aggregation =
-                new BasicDBObject("$group",
-                        new BasicDBObject("_id", 1)
-                                .append("minBlockNumber",
-                                        new BasicDBObject("$min", "$decNumber")
-                                )
-                );
-
-        ArrayList<DBObject> result = (ArrayList<DBObject>) producerTemplate.requestBody("direct:query", aggregation);
-
-        if (result.size() == 0)
-            return 0;
-
-        return (int) result.get(0).get("minBlockNumber");
-    }
-
+    /**
+     * Gets method name of contract by signature hash.
+     * @param address contract address
+     * @param methodKey method's signature hash
+     * @return method name
+     */
     public String findMethodInContract(String address, String methodKey) {
         String queryTemplate = "{\"address\":\"%s\", \"%s\": {$exists : true}}";
         DBObject query = BasicDBObject.parse(
@@ -103,6 +108,11 @@ public class DBHelper {
         }
     }
 
+    /**
+     * Adds contract with ABI to database.
+     * @param address contract address
+     * @param abi contract ABI
+     */
     public void addContractToDB(String address, String abi) {
         Map<String, String> methods = Decoder.getContractFunctionNamesByHash(abi);
 

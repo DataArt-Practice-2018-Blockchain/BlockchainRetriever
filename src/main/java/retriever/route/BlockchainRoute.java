@@ -23,14 +23,11 @@ public class BlockchainRoute extends RouteBuilder {
                 .convertBodyTo(String.class)
                 .to("direct:dbInsertBlock");
 
-/*        from("stream:in")
-                .to("direct:dbInsertBlock");*/
 
         from("direct:dbInsertBlock")
                 .bean(BlockConverterService.class, "convertBlockNumberToDec")
                 .bean(BlockConverterService.class, "convertTimestampToDec")
                 .to("direct:parseBlock")
-              //  .to("stream:out")
                 .to("mongodb:mongo?database=blockchain&collection=blocks&operation=insert");
 
         from("direct:parseBlock")
@@ -38,11 +35,9 @@ public class BlockchainRoute extends RouteBuilder {
 
         from("direct:dbInsertTransaction")
                 .bean(TransactionConverterService.class, "addMethodName")
-                //.to("stream:out");
                 .to("mongodb:mongo?database=blockchain&collection=transactions&operation=insert");
 
         from("direct:dbInsertContract")
-                //.to("stream:out")
                 .to("mongodb:mongo?database=blockchain&collection=contracts&operation=insert");
 
 

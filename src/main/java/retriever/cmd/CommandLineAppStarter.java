@@ -9,12 +9,28 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import retriever.db.DBHelper;
 
+/**
+ * Starting point for command line launching.
+ * Accepted command line options:
+ * -p: if present, only parses blocks from DB for transactions,
+ *      otherwise downloads blocks from node.
+ * -s: number of block to start from.
+ *      If not present or <0, only listens to new blocks.
+ * -f: number of block to end parsing/copying on.
+ *      If not present, parses/copies to the last current block on blockchain.
+ */
 @Component
 public class CommandLineAppStarter implements CommandLineRunner {
 
+    /**
+     * DB access component.
+     */
     @Autowired
     private DBHelper dbHelper;
 
+    /**
+     * Logging frequency, processing time is measured every LOG_FREQUENCY blocks.
+     */
     private static final int LOG_FREQUENCY = 500;
 
     @Override
@@ -42,7 +58,7 @@ public class CommandLineAppStarter implements CommandLineRunner {
             lastBlockIndex = dbHelper.getLastBlockIndex();
         }
 
-        if (startBlockIndex == -1)
+        if (startBlockIndex <= 0)
             return;
 
         if (!cmd.hasOption("p")) {
