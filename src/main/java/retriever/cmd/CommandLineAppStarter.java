@@ -15,7 +15,8 @@ public class CommandLineAppStarter implements CommandLineRunner {
     @Autowired
     private DBHelper dbHelper;
 
-    private static final int LOG_FREQUENCY = 1000;
+    private static final int LOG_FREQUENCY = 1;
+    private static final int TIME_FREQUENCY = 10;
 
     @Override
     public void run(String... args) throws Exception {
@@ -54,10 +55,19 @@ public class CommandLineAppStarter implements CommandLineRunner {
             }
         } else {
             System.out.println("Started parsing from " + startBlockIndex + " to " + lastBlockIndex);
+            long startTime = System.currentTimeMillis();
             for (int i = startBlockIndex; i <= lastBlockIndex; i++) {
                 dbHelper.parseBlockToDB(i);
+
                 if (i % LOG_FREQUENCY == 0)
                     System.out.println("Parsed " + i + " blocks");
+
+                if (i % TIME_FREQUENCY == 0) {
+                    System.out.println("Parsed " + TIME_FREQUENCY + " blocks in " +
+                            (System.currentTimeMillis() - startTime) / 1000 + " s");
+                    startTime = System.currentTimeMillis();
+                }
+
             }
         }
 

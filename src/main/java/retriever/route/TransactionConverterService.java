@@ -36,7 +36,7 @@ public class TransactionConverterService {
         if (methodName == null) {
             try {
                 String abi = etherScanCaller.getABI(address);
-                if (abi == null || abi.equals("Contract source code not verified")) {
+                if (abi == null) {
                     return transaction;
                 }
                 dbHelper.addContractToDB(address, abi);

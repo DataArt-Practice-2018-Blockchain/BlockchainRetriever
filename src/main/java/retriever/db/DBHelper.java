@@ -49,6 +49,8 @@ public class DBHelper {
                 "direct:dbFindOneByQuery",
                 query
         );
+        if (response == null)
+            return null;
         return response.toString();
     }
 
