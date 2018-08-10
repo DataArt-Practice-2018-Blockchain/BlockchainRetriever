@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -35,7 +36,6 @@ public class EtherScanCaller {
 
     public String getABI(String address) {
         HttpEntity<?> entity = new HttpEntity<>(headers);
-
         HttpEntity<String> response = template.exchange(
                 String.format(url, address, apiKey),
                 HttpMethod.GET,

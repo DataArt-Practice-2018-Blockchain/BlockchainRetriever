@@ -5,6 +5,7 @@ import org.apache.camel.Body;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import retriever.apicaller.EtherScanCaller;
 import retriever.db.DBHelper;
 
@@ -33,12 +34,18 @@ public class TransactionConverterService {
         String methodName = dbHelper.findMethodInContract(address, inputMethodData);
 
         if (methodName == null) {
-            String abi = etherScanCaller.getABI(address);
-            if (abi == null || abi.equals("Contract source code not verified")) {
+            try {
+                String abi = etherScanCaller.getABI(address);
+                if (abi == null || abi.equals("Contract source code not verified")) {
+                    return transaction;
+                }
+                dbHelper.addContractToDB(address, abi);
+                methodName = Decoder.getFunctionName(abi, transaction);
+            } catch (HttpClientErrorException e) {
+                System.out.println("API ERROR:\n" + e.getLocalizedMessage());
+                System.out.println("TRANSACTION:\n" + transaction);
                 return transaction;
             }
-            dbHelper.addContractToDB(address, abi);
-            methodName = Decoder.getFunctionName(abi, transaction);
         }
 
         if (methodName == null)

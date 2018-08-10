@@ -27,6 +27,14 @@ public class DBHelper {
         String block = getBlockFromDB(blockNumber);
         if (block != null) {
             producerTemplate.sendBody("direct:parseBlock", block);
+        } else {
+            copyBlockToDB(blockNumber);
+            block = getBlockFromDB(blockNumber);
+            if (block != null) {
+                producerTemplate.sendBody("direct:parseBlock", block);
+            } else {
+                System.out.println("COULD NOT FIND BLOCK " + blockNumber);
+            }
         }
 
     }
